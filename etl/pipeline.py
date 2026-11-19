@@ -18,8 +18,8 @@ from etl.carga import (
 
 
 def executar_pipeline():
-    # ETAPA 1: EXTRAÇÃO
-    # Lê os arquivos brutos preservados na etapa D1.
+    # ETAPA 1: LEITURA DOS DADOS BRUTOS
+    # Carrega os arquivos preservados pela extração da API e do CSV.
     with open("brutos/clientes.json", encoding="utf-8") as arquivo:
         clientes_brutos = json.load(arquivo)
 
@@ -28,7 +28,7 @@ def executar_pipeline():
 
     produtos_brutos = ler_produtos_csv("brutos/produtos.csv")
 
-    print("Extração concluída.")
+    print("print("Leitura dos dados brutos concluída.")")
 
     # ETAPA 2: TRANSFORMAÇÃO
     clientes, metricas_clientes = transformar_clientes(clientes_brutos)
@@ -40,7 +40,7 @@ def executar_pipeline():
 
     print("Transformação concluída.")
 
-        # ETAPA 3: CARGA
+    # ETAPA 3: CARGA
     # Solicita a senha sem mostrá-la no terminal.
     senha = getpass.getpass("Senha do PostgreSQL: ")
 
