@@ -221,3 +221,46 @@ As consultas foram executadas no PostgreSQL e apresentaram resultados consistent
 **Bruno Araújo**
 
 Bootcamp AIR Fellowship — Desafio Final de Engenharia de Dados e Inteligência Artificial.
+
+## Stretch 3 — Relatório de Qualidade
+
+O ETL gera automaticamente um relatório de qualidade após a conclusão bem-sucedida da carga no PostgreSQL.
+
+Os relatórios são salvos na pasta `relatorios/`, em arquivos `.txt` individuais, identificados pela data e hora da execução.
+
+Cada relatório apresenta os contadores das seis regras de transformação:
+
+- **A1:** Clientes com e-mail nulo.
+- **A2:** Estados padronizados.
+- **A3:** Datas convertidas de clientes e pedidos.
+- **A4:** Campos monetários preparados para carga (produtos, pedidos e itens).
+- **A5:** Pedidos duplicados descartados.
+- **A6:** Pedidos com divergência financeira.
+
+Os indicadores são calculados durante o processamento, sem valores fixos no relatório.
+
+A geração do relatório é executada após a confirmação da transação no banco de dados.
+
+### Validação
+
+O relatório foi gerado utilizando os dados reais extraídos da API e do CSV.
+
+| Regra | Quantidade |
+|---|---:|
+| A1 | 81 |
+| A2 | 151 |
+| A3 | 6.000 |
+| A4 | 17.467 |
+| A5 | 100 |
+| A6 | 238 |
+
+A funcionalidade também possui um teste automatizado em `tests/test_relatorio_qualidade.py`.
+
+Para executar todos os testes:
+
+```powershell
+$env:PGPASSWORD = Read-Host "Senha do PostgreSQL"
+python -m pytest tests/ -v
+```
+
+**Resultado obtido:** 8 testes aprovados.

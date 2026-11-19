@@ -1,6 +1,7 @@
 import json
 import getpass
 import psycopg2
+from etl.relatorio_qualidade import gerar_relatorio_qualidade
 
 from etl.extracao import ler_produtos_csv
 from etl.transformacao import (
@@ -85,5 +86,33 @@ def executar_pipeline():
         # Fecha a conexão mesmo quando ocorre algum erro.
         conexao.close()
 
+    # ETAPA 4: RELATÓRIO DE QUALIDADE (STRETCH)
+    # Reúne os contadores das seis regras de transformação.
+    metricas_qualidade = {
+        "emails_nulos": metricas_clientes["emails_nulos"],
+        "estados_padronizados": metricas_clientes["estados_padronizados"],
+
+        # A3: datas convertidas de clientes e pedidos únicos.
+        "datas_convertidas": (
+            metricas_clientes["datas_convertidas"]
+            + metricas_pedidos["datas_convertidas"]
+        ),
+
+        # A4: campos monetários preparados para carga.
+        "valores_convertidos": (
+            metricas_produtos["precos_convertidos"]
+            + metricas_pedidos["pedidos_unicos"]
+            + metricas_itens["itens_processados"]
+        ),
+
+        "duplicados_descartados": metricas_pedidos["duplicados_descartados"],
+        "pedidos_divergentes": metricas_pedidos["pedidos_divergentes"]
+    }
+
+    # Gera o relatório somente após uma carga concluída com sucesso.
+    gerar_relatorio_qualidade(metricas_qualidade)
+
+
 if __name__ == "__main__":
     executar_pipeline()
+
