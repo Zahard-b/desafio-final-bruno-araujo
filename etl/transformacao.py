@@ -358,3 +358,46 @@ def transformar_produtos(produtos):
     }
 
     return produtos_transformados, contadores
+
+def transformar_itens_pedido(pedidos):
+    """
+    Separa os itens dos pedidos em registros individuais,
+    preparando-os para a tabela itens_pedido.
+
+    Retorna:
+        itens_transformados: lista de itens preparados
+        contadores: quantidade de itens processados
+    """
+
+    # Lista que armazenará todos os itens.
+    itens_transformados = []
+
+    # Percorre os pedidos já deduplicados.
+    for pedido in pedidos:
+
+        # Identifica o pedido ao qual os itens pertencem.
+        pedido_id = int(pedido["id"])
+
+        # enumerate(..., start=1) numera os itens de cada pedido.
+        for linha, item in enumerate(pedido["itens"], start=1):
+
+            # Monta um registro com os campos exigidos pelo banco.
+            item_transformado = {
+                "pedido_id": pedido_id,
+                "linha": linha,
+                "produto_id": int(item["produto_id"]),
+                "quantidade": int(item["quantidade"]),
+                "preco_unitario": converter_valor_monetario(
+                    item["preco_unitario"]
+                )
+            }
+
+            # Adiciona o item à lista.
+            itens_transformados.append(item_transformado)
+
+    # Contador para os logs do ETL.
+    contadores = {
+        "itens_processados": len(itens_transformados)
+    }
+
+    return itens_transformados, contadores
