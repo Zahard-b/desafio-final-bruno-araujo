@@ -99,3 +99,15 @@ A IA contribuiu para esclarecer dúvidas, sugerir soluções pontuais e auxiliar
 Entretanto, nem todas as sugestões foram utilizadas. Algumas precisaram ser adaptadas e outras foram rejeitadas após avaliar sua necessidade.
 
 A execução dos testes, a correção dos problemas e a validação dos resultados foram fundamentais para compreender o funcionamento do ETL e garantir a consistência dos dados.
+
+## Uso de IA — Stretch 3: Relatório de Qualidade
+
+**Objetivo:** implementar um relatório automático com a data e hora da execução e os contadores das seis regras de transformação (A1–A6).
+
+**Sugestão da IA:** criar um módulo separado (`etl/relatorio_qualidade.py`) para gerar arquivos `.txt`, utilizando `datetime` para registrar a execução e `pathlib` para organizar os arquivos. Também sugeriu integrar a geração ao `pipeline.py` após a carga no PostgreSQL.
+
+**Decisão tomada:** aceitei a separação do relatório em um módulo próprio para manter o pipeline mais organizado. Optei por gerar um arquivo por execução e ignorar a pasta `relatorios/` no Git, evitando versionar arquivos gerados automaticamente.
+
+**Validação realizada:** primeiro verifiquei a sintaxe do módulo com `py_compile`. Depois, gerei um relatório com dados fictícios e conferi seu conteúdo. Em seguida, executei o ETL com os dados reais e confirmei os seis indicadores: A1 = 81, A2 = 151, A3 = 6.000, A4 = 17.467, A5 = 100 e A6 = 238. Por fim, criei um teste automatizado para o relatório e executei toda a suíte, obtendo **8 testes aprovados**.
+
+**Limitação identificada:** o indicador A4 contabiliza os campos monetários preparados para carga, e não necessariamente cada chamada realizada à função de conversão.
