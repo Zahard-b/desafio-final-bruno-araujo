@@ -39,8 +39,14 @@ O vídeo deverá apresentar a estrutura do projeto, a execução do pipeline, os
 
 ## 5. Reflexão sobre o desenvolvimento
 
-O desenvolvimento foi organizado em etapas de extração, transformação, carga e validação, permitindo verificar os resultados de cada componente antes de avançar.
+1. Qual foi a decisão mais difícil do ETL e por quê?
 
-A principal preocupação foi garantir a consistência dos dados, especialmente no tratamento de pedidos duplicados, nos cálculos monetários e na reconciliação entre Python e PostgreSQL.
+Minha maior dificuldade foi organizar o projeto e entender como cada etapa se conectava. Como ainda estou aprendendo, tive dúvidas sobre a estrutura dos arquivos, a configuração do ambiente e a ordem das atividades. Decidi desenvolver tudo aos poucos, testando cada etapa antes de avançar, o que me ajudou a entender melhor o funcionamento do ETL.
 
-Os testes automatizados ajudaram a verificar as regras de transformação e a consistência dos dados carregados. A reexecução do pipeline também permitiu verificar que as quantidades de registros permaneceram estáveis.
+2. O que você delegou à IA e o que fez questão de fazer sozinho?
+
+Utilizei a IA principalmente para tirar dúvidas, entender os requisitos e receber orientações sobre como organizar o projeto. Também pedi ajuda com funções específicas e testes. Fiz questão de executar os comandos, conferir os resultados e questionar sugestões que não faziam sentido ou apresentavam erros.
+
+3. Se tivesse mais uma semana, o que mudaria primeiro?
+
+Eu gostaria de ter desenvolvido o projeto com mais calma, dedicando mais tempo para entender e absorver o funcionamento de cada etapa. Também revisaria o código para identificar partes que poderiam ser simplificadas ou processos desnecessários que poderiam ser removidos, deixando o ETL mais organizado, fácil de entender e manter.
