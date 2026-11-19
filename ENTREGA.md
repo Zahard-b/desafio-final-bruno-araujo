@@ -6,7 +6,7 @@
 
 **Branch de desenvolvimento:** `feat/etl-pipeline`
 
-**Pull Request:** Pendente de criação.
+**Pull Request:** https://github.com/Zahard-b/desafio-final-bruno-araujo/pull/1
 
 ## 2. Resumo da implementação
 
