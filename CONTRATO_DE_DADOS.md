@@ -57,7 +57,7 @@ Os dados são extraídos do arquivo `insumos/dados/produtos.csv`.
 
 Como os dados são lidos utilizando `csv.DictReader`, os valores são inicialmente recebidos como texto. Os campos `produto_id` e `preco_base` devem ser convertidos para os tipos adequados antes da inserção no PostgreSQL.
 
-Para os preços, será utilizada uma representação decimal apropriada para valores monetários, evitando erros de precisão de números de ponto flutuante.
+Os preços são convertidos para Decimal, com duas casas decimais, evitando imprecisões associadas a números de ponto flutuante.
 
 ### Validações previstas
 
@@ -129,7 +129,7 @@ O processo deve contabilizar a quantidade de pedidos divergentes.
 
 **Quantidade de registros brutos identificados na origem:** 5.100.
 
-A quantidade de pedidos únicos será determinada durante a transformação, após a aplicação da regra A5.
+Após a aplicação da regra A5 sobre os 5.100 pedidos brutos, foram identificados 5.000 pedidos únicos e descartadas 100 duplicatas.
 
 ## 5. Tabela `itens_pedido`
 
@@ -178,3 +178,18 @@ O resultado será utilizado para preencher o campo `valor_itens` da tabela `pedi
 - Confirmar que quantidades e preços foram convertidos corretamente.
 - Confirmar que os itens dos pedidos duplicados não foram carregados duas vezes.
 - Comparar a soma dos valores dos itens na origem transformada com a soma correspondente no PostgreSQL.
+
+## 6. Resultados da validação
+
+Após a execução do pipeline, foram confirmadas as seguintes quantidades no PostgreSQL:
+
+| Tabela | Registros |
+|---|---:|
+| clientes | 1.000 |
+| produtos | 12 |
+| pedidos | 5.000 |
+| itens_pedido | 12.455 |
+
+A reconciliação entre os pedidos transformados em Python e os dados armazenados no PostgreSQL apresentou diferença financeira de R$ 0,00.
+
+Os testes automatizados foram executados com sucesso, totalizando 7 testes aprovados.

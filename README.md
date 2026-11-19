@@ -82,19 +82,43 @@ No PowerShell:
 
 ```powershell
 $env:PGPASSWORD = Read-Host "Senha do PostgreSQL"
+
+
 ```
+### Extração dos dados
+
+Antes de executar a extração, é necessário iniciar a API Verdejar.
+
+No primeiro terminal, a partir da raiz do projeto:
+
+```powershell
+cd insumos
+python api_verdejar.py
+```
+
+Mantenha esse terminal aberto.
+
+Em um segundo terminal, na raiz do projeto, execute:
+
+```powershell
+python -m etl.extracao
+```
+
+A extração consulta as rotas de clientes e pedidos em páginas de 50 registros e preserva os dados brutos na pasta `brutos/`, juntamente com o catálogo de produtos em CSV.
+
+Essa etapa deve ser realizada antes da primeira execução do pipeline.
 
 ### Execução do pipeline
 
-Com os dados brutos disponíveis e o PostgreSQL configurado:
+Após concluir a extração e configurar o PostgreSQL, execute na raiz do projeto:
 
 ```powershell
 python -m etl.pipeline
 ```
 
-O comando executa as etapas de transformação e carga a partir dos arquivos preservados em `brutos/`.
+O comando lê os arquivos preservados em `brutos/`, aplica as regras de transformação e carrega os dados nas quatro tabelas do PostgreSQL.
 
-A extração dos dados da API foi implementada em `etl/extracao.py` e executada separadamente. A preparação dos arquivos brutos é necessária antes da primeira execução em um ambiente novo.
+A carga utiliza transações e operações de atualização em caso de conflito, permitindo a reexecução sem duplicar registros.
 
 ## Regras de transformação
 
@@ -171,13 +195,20 @@ A reconciliação verifica a consistência entre os valores calculados durante a
 | Soma de `valor_itens` no PostgreSQL | R$ 311.228,75 |
 | Diferença financeira | R$ 0,00 |
 
-O teste automatizado compara a quantidade de pedidos e a soma dos valores, utilizando tolerância máxima de R$ 0,01 para a diferença financeira.
+O teste automatizado compara a quantidade de pedidos e a soma dos valores, exigindo igualdade entre os resultados calculados em Python e os armazenados no PostgreSQL, com diferença financeira de R$ 0,00.
 
 ## Consultas de validação
 
-O arquivo `consultas_validacao.sql` é destinado às consultas de conferência dos dados, incluindo agregações mensais, distribuição de pedidos por estado e identificação de divergências financeiras.
+O arquivo `consultas_validacao.sql` contém quatro consultas utilizadas para verificar os dados armazenados no PostgreSQL.
 
-As consultas também devem permitir verificar a consistência dos totais agregados com os valores armazenados.
+| Consulta | Verificação | Resultado |
+|---|---|---|
+| V1 | Quantidade e valor dos pedidos agrupados por mês | Total geral de R$ 311.228,75 |
+| V2 | Quantidade de pedidos agrupados por estado | 5.000 pedidos no total |
+| V3 | Pedidos com divergência financeira | 238 pedidos |
+| V4 | Reconciliação entre a soma mensal e o total geral | Diferença de R$ 0,00 |
+
+As consultas foram executadas no PostgreSQL e apresentaram resultados consistentes com as transformações realizadas em Python.
 
 ## Documentação complementar
 
