@@ -52,9 +52,14 @@ def test_reconciliacao_pedidos():
         # Verifica a quantidade de pedidos.
         assert quantidade_origem == quantidade_banco
 
-        # Verifica a diferença financeira permitida.
+        # A soma financeira deve ser exatamente igual.
         diferenca = abs(soma_origem - Decimal(soma_banco))
-        assert diferenca <= Decimal("0.01")
+
+
+        assert diferenca == Decimal("0.00"), (
+            f"Divergência financeira encontrada: R$ {diferenca}"
+        )
 
     finally:
+        # Fecha a conexão mesmo quando ocorre uma falha.
         conexao.close()

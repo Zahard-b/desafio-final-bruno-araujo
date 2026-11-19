@@ -1,15 +1,16 @@
 from datetime import date
-from etl.transformacao import tratar_emails_nulos
-from etl.transformacao import padronizar_estados
-
 from decimal import Decimal
-from etl.transformacao import converter_valor_monetario
-from etl.transformacao import remover_pedidos_duplicados
-from etl.transformacao import calcular_valores_pedido
+
 import pytest
 
-from etl.transformacao import converter_data
-
+from etl.transformacao import (
+    tratar_emails_nulos,
+    padronizar_estados,
+    converter_data,
+    converter_valor_monetario,
+    remover_pedidos_duplicados,
+    calcular_valores_pedido,
+)
 
 def test_a3_conversao_datas():
     # Verifica a conversão do formato ISO.
