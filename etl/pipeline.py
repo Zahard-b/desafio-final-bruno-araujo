@@ -28,7 +28,7 @@ def executar_pipeline():
 
     produtos_brutos = ler_produtos_csv("brutos/produtos.csv")
 
-    print("print("Leitura dos dados brutos concluída.")")
+    print("Leitura dos dados brutos concluída.")
 
     # ETAPA 2: TRANSFORMAÇÃO
     clientes, metricas_clientes = transformar_clientes(clientes_brutos)
