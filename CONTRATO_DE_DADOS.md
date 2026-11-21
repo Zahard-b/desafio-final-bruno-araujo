@@ -192,4 +192,4 @@ Após a execução do pipeline, foram confirmadas as seguintes quantidades no Po
 
 A reconciliação entre os pedidos transformados em Python e os dados armazenados no PostgreSQL apresentou diferença financeira de R$ 0,00.
 
-Os testes automatizados foram executados com sucesso, totalizando 7 testes aprovados.
+Os testes automatizados foram executados com sucesso, totalizando 8 testes aprovados.

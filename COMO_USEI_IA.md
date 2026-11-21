@@ -14,17 +14,17 @@ As tarefas solicitadas à IA foram delimitadas por funcionalidade, como a conver
 
 | Sugestão | Justificativa e validação |
 |---|---|
-| Utilizar `Decimal` para valores monetários | Evitou problemas de precisão associados ao `float`. A reconciliação financeira apresentou diferença de R$ 0,00. |
+| Utilizar `Decimal` para valores monetários | Pedi ajuda para converter valores recebidos como número ou texto com vírgula. Aceitei `Decimal` para preservar a precisão dos cálculos em centavos. Validei a conversão com o teste A4 e conferi que a soma de `valor_itens` no Python e no PostgreSQL foi de R$ 311.228,75, com diferença de R$ 0,00. |
 | Criar testes automatizados com `pytest` | Permitiu validar individualmente as seis regras de transformação e a reconciliação. Os sete testes passaram. |
-| Utilizar `ON CONFLICT DO UPDATE` na carga | Permitiu reexecutar o pipeline sem duplicar registros. As quantidades das quatro tabelas permaneceram iguais após a segunda execução. |
+| Utilizar `ON CONFLICT DO UPDATE` na carga | Pedi ajuda para reexecutar a carga sem duplicar registros. Aceitei a sugestão porque, quando a chave já existe, o PostgreSQL atualiza a linha existente. Validei a decisão rodando o pipeline duas vezes e conferindo no PostgreSQL que as contagens foram mantidas: 12 produtos, 1.000 clientes, 5.000 pedidos e 12.455 itens. |
 
 ## 3. Sugestões rejeitadas ou adaptadas
 
 | Sugestão | Motivo da decisão |
 |---|---|
 | Criar um arquivo separado apenas para testar a regra A6 | Preferi realizar a verificação diretamente pelo terminal, evitando arquivos temporários desnecessários. |
-| Utilizar comandos extensos com `python -c` no PowerShell | Os comandos apresentaram problemas com aspas e sintaxe. Preferi instruções mais simples e fáceis de executar. |
-| Repetir a execução de `etl.pipeline` após uma falha de importação | Adaptada: o comando retornava `No module named etl.pipeline`. Antes de repetir o comando, investiguei a estrutura do projeto e identifiquei que o arquivo havia sido criado incorretamente em `etl/__pycache__`. Corrigi sua localização e a indentação antes de executar novamente. |
+| Criar um arquivo separado apenas para testar a regra A6 | Pedi ajuda para conferir o cálculo dos itens e a marcação de divergência. Rejeitei o arquivo separado porque a verificação pontual podia ser feita no terminal. A validação permanente ficou em `tests/test_transformacao.py`: o teste A6 passou e confirmou que R$ 0,01 de diferença fica dentro da tolerância e que R$ 0,02 é marcado como divergência. |
+| Repetir a execução de `etl.pipeline` após uma falha de importação | Pedi ajuda porque `python -m etl.pipeline` retornava `No module named etl.pipeline`. Antes de repetir o comando, conferi a estrutura do projeto e encontrei `pipeline.py` em `etl/__pycache__`. Corrigi a localização e a indentação do arquivo. Depois rodei o mesmo comando e confirmei que o pipeline executava e carregava as quatro tabelas. |
 
 ## 4. Falhas e retrabalho
 
@@ -35,6 +35,8 @@ A implementação inicial precisou ser revisada para tratar erros de conexão e 
 Após a correção, testei uma conexão recusada e uma rota inexistente, que retornou HTTP 404.
 
 ### Consulta SQL no pgAdmin
+
+Na Sprint 1, usei a IA como tutora para entender as consultas SQL e investigar erros no pgAdmin. Eu executei as consultas e conferi os resultados. Na validação de vendas, comparei a soma dos meses com o total geral: ambos deram R$ 311.228,75, com diferença de R$ 0,00.
 
 Uma orientação incompleta fez com que um `ORDER BY` antigo permanecesse no editor, provocando o erro:
 

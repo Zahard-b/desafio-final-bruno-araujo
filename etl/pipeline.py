@@ -108,6 +108,8 @@ def executar_pipeline():
         "duplicados_descartados": metricas_pedidos["duplicados_descartados"],
         "pedidos_divergentes": metricas_pedidos["pedidos_divergentes"]
     }
+    print("Datas convertidas:", metricas_qualidade["datas_convertidas"])
+    print("Valores monetários convertidos:", metricas_qualidade["valores_convertidos"])
 
     # Gera o relatório somente após uma carga concluída com sucesso.
     gerar_relatorio_qualidade(metricas_qualidade)

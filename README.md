@@ -76,7 +76,7 @@ O ambiente utilizado no desenvolvimento possui as seguintes configurações:
 | Banco | `verdejar` |
 | Usuário | `postgres` |
 
-A senha deve ser fornecida por variável de ambiente, sem ser armazenada no código-fonte.
+O pipeline solicita a senha no terminal. O teste de reconciliação usa a variável de ambiente PGPASSWORD, configurada no PowerShell como abaixo.
 
 No PowerShell:
 
@@ -164,14 +164,14 @@ A carga utiliza instruções SQL parametrizadas e operações `INSERT ... ON CON
 
 As operações são executadas dentro de uma transação, com confirmação por `COMMIT` e reversão por `ROLLBACK` em caso de falha.
 
-A idempotência foi verificada mediante duas execuções consecutivas do pipeline. Após a segunda execução, as quatro tabelas mantiveram as mesmas quantidades de registros.
+A idempotência foi verificada mediante duas execuções consecutivas do pipeline. Após a segunda execução o COUNT(*) confirmou 12 produtos, 1.000 clientes, 5.000 pedidos e 12.455 itens, as quatro tabelas mantiveram as mesmas quantidades de registros.
 
 ## Testes automatizados
 
 A suíte de testes foi desenvolvida utilizando `pytest` e contempla:
 
 - Seis testes para as regras de transformação A1–A6.
-- Um teste de reconciliação entre os pedidos transformados em Python e os registros armazenados no PostgreSQL.
+- Um teste de reconciliação para a geração do relatório de qualidade do Stretch 3. entre os pedidos transformados em Python e os registros armazenados no PostgreSQL.
 
 Para executar:
 
@@ -181,7 +181,7 @@ python -m pytest tests/ -v
 
 O teste de reconciliação requer que o PostgreSQL esteja acessível, com os dados carregados e a variável `PGPASSWORD` configurada.
 
-**Resultado da execução conjunta: 7 testes aprovados.**
+O resultado foi 8 passed, 14 warnings.git status --short --branch
 
 ## Reconciliação financeira
 
@@ -208,7 +208,38 @@ O arquivo `consultas_validacao.sql` contém quatro consultas utilizadas para ver
 | V3 | Pedidos com divergência financeira | 238 pedidos |
 | V4 | Reconciliação entre a soma mensal e o total geral | Diferença de R$ 0,00 |
 
-As consultas foram executadas no PostgreSQL e apresentaram resultados consistentes com as transformações realizadas em Python.
+### V1 — Vendas por mês
+
+| Mês | Pedidos | Vendas (R$) |
+|---|---:|---:|
+| 2026-01 | 488 | 30.355,02 |
+| 2026-02 | 536 | 33.855,86 |
+| 2026-03 | 487 | 30.617,70 |
+| 2026-04 | 521 | 31.170,96 |
+| 2026-05 | 512 | 30.777,02 |
+| 2026-06 | 523 | 31.557,73 |
+| 2026-07 | 519 | 32.685,17 |
+| 2026-08 | 458 | 29.260,04 |
+| 2026-09 | 476 | 29.909,71 |
+| 2026-10 | 480 | 31.039,54 |
+| **Total** | **5.000** | **311.228,75** |
+
+### V2 — Pedidos por estado
+
+| Estado | Pedidos |
+|---|---:|
+| RS | 1.543 |
+| SC | 1.127 |
+| PR | 974 |
+| SP | 880 |
+| MG | 476 |
+| **Total** | **5.000** |
+
+### V4 — Conferência da soma mensal
+
+| Soma dos meses (R$) | Total geral (R$) | Diferença (R$) |
+|---:|---:|---:|
+| 311.228,75 | 311.228,75 | 0,00 |
 
 ## Documentação complementar
 

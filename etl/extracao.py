@@ -94,7 +94,10 @@ def extrair_paginado(url_base, rota, tamanho_pagina=50):
 
         pagina += 1
 
-    print(f"Extração concluída: {len(registros)} registros")
+    print(
+        f"Extração de {rota.strip('/')}: "
+        f"{pagina} páginas, {len(registros)} registros"
+    )
 
     return registros
 
