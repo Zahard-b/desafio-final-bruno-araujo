@@ -30,12 +30,15 @@ O projeto também inclui testes automatizados e reconciliação entre os dados t
 .
 ├── etl/
 │   ├── extracao.py
+│   ├── regras_transformacao.py
 │   ├── transformacao.py
 │   ├── carga.py
-│   └── pipeline.py
+│   ├── pipeline.py
+│   └── relatorio_qualidade.py
 ├── tests/
 │   ├── test_transformacao.py
-│   └── test_reconciliacao.py
+│   ├── test_reconciliacao.py
+│   └── test_relatorio_qualidade.py
 ├── insumos/
 │   ├── api_verdejar.py
 │   ├── gerar_dados.py
@@ -45,7 +48,9 @@ O projeto também inclui testes automatizados e reconciliação entre os dados t
 └── ...
 ```
 
-O diretório `brutos/` é utilizado para preservar os dados extraídos durante o processamento e não é versionado no repositório.
+`etl/regras_transformacao.py` contém as regras A1–A6. `etl/transformacao.py` aplica essas regras aos lotes e reúne os contadores.
+
+`brutos/` guarda os dados extraídos, e `relatorios/` recebe os relatórios de qualidade. Os arquivos gerados nessas pastas são ignorados pelo Git.
 
 ## Execução
 
@@ -62,12 +67,12 @@ O diretório `brutos/` é utilizado para preservar os dados extraídos durante o
 Na raiz do projeto, execute:
 
 ```powershell
-python -m pip install requests psycopg2-binary pytest
+python -m pip install -r requirements.txt
 ```
 
 ### Configuração do banco de dados
 
-O ambiente utilizado no desenvolvimento possui as seguintes configurações:
+O projeto usa o caminho A da errata, com PostgreSQL instalado localmente. A configuração usada é:
 
 | Parâmetro | Valor |
 |---|---|
@@ -76,15 +81,8 @@ O ambiente utilizado no desenvolvimento possui as seguintes configurações:
 | Banco | `verdejar` |
 | Usuário | `postgres` |
 
-O pipeline solicita a senha no terminal. O teste de reconciliação usa a variável de ambiente PGPASSWORD, configurada no PowerShell como abaixo.
+O pipeline solicita a senha no terminal com `getpass`, que oculta a digitação. O teste de reconciliação usa a variável de ambiente `PGPASSWORD`, configurada na seção [Testes automatizados](#testes-automatizados).
 
-No PowerShell:
-
-```powershell
-$env:PGPASSWORD = Read-Host "Senha do PostgreSQL"
-
-
-```
 ### Extração dos dados
 
 Antes de executar a extração, é necessário iniciar a API Verdejar.
@@ -128,8 +126,8 @@ As transformações foram implementadas em funções independentes, seguindo as 
 |---|---|---|
 | A1 | Identificação e tratamento de e-mails nulos | 81 ocorrências |
 | A2 | Padronização de siglas de estados | 151 alterações |
-| A3 | Conversão de datas para formato consistente | 1.000 datas de clientes |
-| A4 | Conversão de valores monetários para `Decimal` | Valores padronizados |
+| A3 | Conversão de datas | 6.000 datas convertidas (1.000 de clientes e 5.000 de pedidos) |
+| A4 | Conversão de valores monetários para `Decimal` | 17.467 campos monetários preparados para carga |
 | A5 | Remoção de pedidos duplicados por identificador | 100 duplicatas removidas |
 | A6 | Cálculo dos valores dos itens e identificação de divergências | 238 pedidos divergentes |
 
@@ -164,24 +162,37 @@ A carga utiliza instruções SQL parametrizadas e operações `INSERT ... ON CON
 
 As operações são executadas dentro de uma transação, com confirmação por `COMMIT` e reversão por `ROLLBACK` em caso de falha.
 
-A idempotência foi verificada mediante duas execuções consecutivas do pipeline. Após a segunda execução o COUNT(*) confirmou 12 produtos, 1.000 clientes, 5.000 pedidos e 12.455 itens, as quatro tabelas mantiveram as mesmas quantidades de registros.
+A idempotência foi verificada executando o pipeline duas vezes com os mesmos dados.
+
+| Tabela | Primeira carga | Segunda carga |
+|---|---:|---:|
+| Produtos | 12 | 12 |
+| Clientes | 1.000 | 1.000 |
+| Pedidos | 5.000 | 5.000 |
+| Itens de pedido | 12.455 | 12.455 |
+
+Após a segunda carga, uma consulta `COUNT(*)` no PostgreSQL confirmou
+essas mesmas contagens nas quatro tabelas.
 
 ## Testes automatizados
 
 A suíte de testes foi desenvolvida utilizando `pytest` e contempla:
 
 - Seis testes para as regras de transformação A1–A6.
-- Um teste de reconciliação para a geração do relatório de qualidade do Stretch 3. entre os pedidos transformados em Python e os registros armazenados no PostgreSQL.
+- Um teste de reconciliação entre os pedidos transformados em Python e os registros armazenados no PostgreSQL.
+- Um teste de geração do relatório de qualidade do Stretch 3.
 
-Para executar:
+Execute na raiz do projeto, com o PostgreSQL em execução e os dados já carregados. O teste de reconciliação lê a senha de `PGPASSWORD` no mesmo terminal.
 
 ```powershell
-python -m pytest tests/ -v
+$senhaPg = Read-Host "Senha do PostgreSQL" -AsSecureString
+$env:PGPASSWORD = [System.Net.NetworkCredential]::new("", $senhaPg).Password
+python -m pytest tests/ -q
+Remove-Item Env:PGPASSWORD
+Remove-Variable senhaPg
 ```
 
-O teste de reconciliação requer que o PostgreSQL esteja acessível, com os dados carregados e a variável `PGPASSWORD` configurada.
-
-O resultado foi 8 passed, 14 warnings.git status --short --branch
+Resultado registrado da suíte completa: `8 passed`.
 
 ## Reconciliação financeira
 
@@ -274,7 +285,7 @@ A geração do relatório é executada após a confirmação da transação no b
 
 ### Validação
 
-O relatório foi gerado utilizando os dados reais extraídos da API e do CSV.
+O relatório foi gerado com os dados sintéticos do desafio, extraídos da API local e do CSV.
 
 | Regra | Quantidade |
 |---|---:|
@@ -287,11 +298,4 @@ O relatório foi gerado utilizando os dados reais extraídos da API e do CSV.
 
 A funcionalidade também possui um teste automatizado em `tests/test_relatorio_qualidade.py`.
 
-Para executar todos os testes:
-
-```powershell
-$env:PGPASSWORD = Read-Host "Senha do PostgreSQL"
-python -m pytest tests/ -v
-```
-
-**Resultado obtido:** 8 testes aprovados.
+O comando para executar a suíte completa está na seção [Testes automatizados](#testes-automatizados).

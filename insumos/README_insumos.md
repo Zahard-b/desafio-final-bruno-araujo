@@ -9,14 +9,14 @@ Conteúdo 100% sintético, gerado com seed reprodutível (2026). Apenas bibliote
 | `gerar_dados.py` | Gera `dados/clientes.json`, `dados/pedidos.json` e `dados/produtos.csv`. Use `--seed` para reproduzir; a seed oficial do desafio é 2026. |
 | `api_verdejar.py` | Sobe a API HTTP local em `http://127.0.0.1:8000` com as rotas `/clientes`, `/pedidos` (paginadas) e `/saude`. |
 | `schema.sql` | Esquema de destino no PostgreSQL (tabelas clientes, produtos, pedidos, itens_pedido), para os caminhos A (PostgreSQL instalado) e B (PostgreSQL em Docker). |
-| `schema_sqlite.sql` | O mesmo esquema adaptado ao SQLite, para o caminho C (contingência, sem instalar nada). Publicado com a errata de 18/11/2026. |
+| `schema_sqlite.sql` | O mesmo esquema adaptado ao SQLite, para o caminho C (contingência, sem instalar nada). Publicado com a errata de 18/11/2026 e ausente neste repositório. |
 | `dados/` | Dados já gerados com a seed 2026, para quem preferir não rodar o gerador. |
 
 ## Passos
 
 1. `python3 gerar_dados.py` (opcional; os dados da seed 2026 já acompanham a pasta).
 2. `python3 api_verdejar.py` e, em outro terminal, `curl "http://127.0.0.1:8000/saude"`.
-3. Subir o banco pelo caminho escolhido na seção 4 do desafio (A: PostgreSQL instalado, recomendado; B: PostgreSQL em Docker, opcional; C: SQLite) e aplicar o esquema correspondente (`schema.sql` ou `schema_sqlite.sql`). Docker não é obrigatório nem avaliado.
+3. Este projeto segue o caminho A da errata. Inicie o PostgreSQL instalado localmente e aplique o esquema [`schema.sql`](schema.sql) no banco `verdejar`. Docker é opcional no desafio.
 
 ## Armadilhas declaradas nos dados
 

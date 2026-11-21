@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from etl.transformacao import (
+from etl.regras_transformacao import (
     tratar_emails_nulos,
     padronizar_estados,
     converter_data,

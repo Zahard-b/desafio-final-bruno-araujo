@@ -29,7 +29,7 @@ O projeto implementa um pipeline ETL em Python e PostgreSQL, contemplando:
 | Pedidos duplicados descartados | 100 |
 | Pedidos com divergência financeira | 238 |
 | Diferença na reconciliação | R$ 0,00 |
-| Testes automatizados aprovados | 7 |
+| Testes automatizados aprovados | 8 |
 
 ## 4. Vídeo de demonstração
 

@@ -64,18 +64,6 @@ def executar_pipeline():
         # Confirma todas as alterações somente após as quatro cargas.
         conexao.commit()
 
-        print("Carga concluída com sucesso!")
-        print("Produtos carregados:", total_produtos)
-        print("Clientes carregados:", total_clientes)
-        print("Pedidos carregados:", total_pedidos)
-        print("Itens carregados:", total_itens)
-
-        # Exibe as métricas das transformações.
-        print("E-mails nulos:", metricas_clientes["emails_nulos"])
-        print("Estados padronizados:", metricas_clientes["estados_padronizados"])
-        print("Duplicados descartados:", metricas_pedidos["duplicados_descartados"])
-        print("Pedidos divergentes:", metricas_pedidos["pedidos_divergentes"])
-
     except Exception:
         # Se alguma carga falhar, desfaz todas as alterações da transação.
         conexao.rollback()
@@ -85,6 +73,18 @@ def executar_pipeline():
     finally:
         # Fecha a conexão mesmo quando ocorre algum erro.
         conexao.close()
+
+    print("Carga concluída com sucesso!")
+    print("Produtos carregados:", total_produtos)
+    print("Clientes carregados:", total_clientes)
+    print("Pedidos carregados:", total_pedidos)
+    print("Itens carregados:", total_itens)
+
+    # Exibe as métricas das transformações.
+    print("E-mails nulos:", metricas_clientes["emails_nulos"])
+    print("Estados padronizados:", metricas_clientes["estados_padronizados"])
+    print("Duplicados descartados:", metricas_pedidos["duplicados_descartados"])
+    print("Pedidos divergentes:", metricas_pedidos["pedidos_divergentes"])
 
     # ETAPA 4: RELATÓRIO DE QUALIDADE (STRETCH)
     # Reúne os contadores das seis regras de transformação.

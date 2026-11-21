@@ -10,11 +10,11 @@ As definições foram verificadas diretamente no banco de dados `verdejar`, cria
 
 | Campo | Tipo | Aceita NULL | Regra de transformação |
 |---|---|---|---|
-| id | INTEGER | Não | Converter para inteiro |
+| id | INTEGER | Não | Preservar o identificador inteiro recebido da API |
 | nome | TEXT | Não | Preservar o valor |
 | email | TEXT | Sim | Preservar valores nulos |
 | cidade | TEXT | Não | Preservar o valor |
-| estado | CHAR | Não | Converter para maiúsculas |
+| estado | CHAR(2) | Não | Converter para maiúsculas |
 | cadastro_em | DATE | Não | Converter para data |
 
 ### Regras de qualidade
@@ -49,7 +49,7 @@ Os dados são extraídos do arquivo `insumos/dados/produtos.csv`.
 | produto_id | INTEGER | Não | Converter o identificador recebido como texto para inteiro |
 | nome | TEXT | Não | Preservar o nome do produto |
 | categoria | TEXT | Não | Preservar a categoria |
-| preco_base | NUMERIC | Não | Converter o preço recebido como texto para valor numérico |
+| preco_base | NUMERIC(10,2) | Não | Converter o preço recebido como texto para valor numérico |
 
 ### Regras de qualidade
 
@@ -76,12 +76,12 @@ Os dados são extraídos da rota `/pedidos` da API REST.
 
 | Campo | Tipo PostgreSQL | Aceita NULL | Regra de transformação |
 |---|---|---|---|
-| id | INTEGER | Não | Converter para inteiro e eliminar IDs duplicados, preservando a primeira ocorrência |
-| cliente_id | INTEGER | Não | Converter para inteiro |
+| id | INTEGER | Não | Preservar o identificador inteiro recebido da API e eliminar duplicatas, mantendo a primeira ocorrência |
+| cliente_id | INTEGER | Não | Preservar o identificador inteiro do cliente recebido da API |
 | data_pedido | DATE | Não | Converter para data válida |
 | status | TEXT | Não | Preservar o status |
-| valor_total | NUMERIC | Não | Converter para valor decimal com duas casas |
-| valor_itens | NUMERIC | Não | Calcular a soma dos itens do pedido |
+| valor_total | NUMERIC(12,2) | Não | Converter para valor decimal com duas casas |
+| valor_itens | NUMERIC(12,2) | Não | Calcular a soma dos itens do pedido |
 | divergente | BOOLEAN | Não | Indicar se existe divergência entre o valor total e a soma dos itens |
 
 ### Regras de qualidade
@@ -143,7 +143,7 @@ Os registros são obtidos a partir dos itens presentes nos pedidos extraídos da
 | linha | INTEGER | Não | Identificar a posição do item dentro do pedido |
 | produto_id | INTEGER | Não | Converter o identificador do produto para inteiro |
 | quantidade | INTEGER | Não | Converter a quantidade para inteiro |
-| preco_unitario | NUMERIC | Não | Converter o preço unitário para valor decimal |
+| preco_unitario | NUMERIC(10,2) | Não | Converter o preço unitário para valor decimal |
 
 ### Regras de qualidade
 

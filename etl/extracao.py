@@ -42,9 +42,6 @@ def extrair_paginado(url_base, rota, tamanho_pagina=50):
             # Interrompe a extração se a API retornar erro HTTP.
             resposta.raise_for_status()
 
-            # Converte a resposta JSON em dados Python.
-            dados = resposta.json()
-
         except requests.exceptions.HTTPError as erro:
             print(f"Erro HTTP na página {pagina}: {erro}")
             return None
@@ -53,7 +50,9 @@ def extrair_paginado(url_base, rota, tamanho_pagina=50):
             print(f"Erro de conexão na página {pagina}: {erro}")
             return None
 
-        except ValueError as erro:
+        try:
+            dados = resposta.json()
+        except requests.exceptions.JSONDecodeError as erro:
             print(f"JSON inválido na página {pagina}: {erro}")
             return None
 
