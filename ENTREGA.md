@@ -56,7 +56,7 @@ As tarefas solicitadas à IA foram delimitadas por funcionalidade, como a conver
 | Sugestão | Justificativa e validação |
 |---|---|
 | Utilizar `Decimal` para valores monetários | Pedi ajuda para converter valores recebidos como número ou texto com vírgula. Aceitei `Decimal` para preservar a precisão dos cálculos em centavos. Validei a conversão com o teste A4 e conferi que a soma de `valor_itens` no Python e no PostgreSQL foi de R$ 311.228,75, com diferença de R$ 0,00. |
-| Criar testes automatizados com `pytest` | Permitiu validar individualmente as seis regras de transformação e a reconciliação. Os sete testes passaram. |
+| Criar testes automatizados com `pytest` | Permitiu validar individualmente as seis regras de transformação e a reconciliação. Nessa primeira rodada, antes do teste do relatório de qualidade, os sete testes passaram. |
 | Utilizar `ON CONFLICT DO UPDATE` na carga | Pedi ajuda para reexecutar a carga sem duplicar registros. Aceitei a sugestão porque, quando a chave já existe, o PostgreSQL atualiza a linha existente. Validei a decisão rodando o pipeline duas vezes e conferindo no PostgreSQL que as contagens foram mantidas: 12 produtos, 1.000 clientes, 5.000 pedidos e 12.455 itens. |
 
 #### 3. Sugestões rejeitadas ou adaptadas
@@ -109,7 +109,7 @@ e confirmei que as seis regras continuavam funcionando.
 
 | Verificação | Resultado |
 |---|---|
-| Testes automatizados | 7 aprovados |
+| Suíte completa após o Stretch 3 | 8 testes aprovados |
 | Pedidos duplicados removidos | 100 |
 | Pedidos divergentes | 238 |
 | Pedidos carregados | 5.000 |
@@ -129,11 +129,10 @@ ERROR: erro de sintaxe em ou próximo a "ORDER"
 SQL state: 42601
 ```
 
-**Resultado dos testes:**
+**Resultados do pytest:**
 
-```text
-7 passed
-```
+- Antes do teste do relatório de qualidade: `7 passed`.
+- Suíte completa com o teste do relatório de qualidade: `8 passed`.
 
 #### 6. Conclusão
 
