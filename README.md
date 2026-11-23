@@ -1,2 +1,301 @@
-# desafio-final-bruno-araujo
-desafio bootcamp AIR fellowship para engenharia de dados e IA
+# Verdejar — Pipeline ETL
+
+Pipeline de engenharia de dados desenvolvido como parte do desafio final do **Bootcamp AIR Fellowship**, com foco em extração, transformação, carga e validação de dados utilizando Python e PostgreSQL.
+
+O projeto integra informações de clientes, pedidos e produtos provenientes de uma API REST e de um arquivo CSV, aplicando regras de qualidade antes da persistência em um banco de dados relacional.
+
+## Visão geral
+
+O processamento é organizado em três etapas:
+
+1. **Extração:** coleta paginada de clientes e pedidos via API REST e leitura do catálogo de produtos em CSV.
+2. **Transformação:** padronização de dados, conversão de tipos, remoção de duplicatas e identificação de divergências financeiras.
+3. **Carga:** persistência no PostgreSQL com controle transacional e operações que permitem reexecução sem duplicação de registros.
+
+O projeto também inclui testes automatizados e reconciliação entre os dados transformados e os dados armazenados.
+
+## Tecnologias
+
+| Tecnologia | Finalidade |
+|---|---|
+| Python | Implementação do pipeline ETL |
+| PostgreSQL | Armazenamento relacional |
+| psycopg2 | Comunicação com o banco de dados |
+| pytest | Testes automatizados |
+| Git | Controle de versão |
+
+## Estrutura do projeto
+
+```text
+.
+├── etl/
+│   ├── extracao.py
+│   ├── regras_transformacao.py
+│   ├── transformacao.py
+│   ├── carga.py
+│   ├── pipeline.py
+│   └── relatorio_qualidade.py
+├── tests/
+│   ├── test_transformacao.py
+│   ├── test_reconciliacao.py
+│   └── test_relatorio_qualidade.py
+├── insumos/
+│   ├── api_verdejar.py
+│   ├── gerar_dados.py
+│   ├── schema.sql
+│   └── dados/
+├── README.md
+└── ...
+```
+
+`etl/regras_transformacao.py` contém as regras A1–A6. `etl/transformacao.py` aplica essas regras aos lotes e reúne os contadores.
+
+`brutos/` guarda os dados extraídos, e `relatorios/` recebe os relatórios de qualidade. Os arquivos gerados nessas pastas são ignorados pelo Git.
+
+## Execução
+
+### Pré-requisitos
+
+- Python 3.14 ou versão compatível com as dependências utilizadas.
+- PostgreSQL instalado e em execução.
+- Banco de dados `verdejar` configurado.
+- Estrutura das tabelas criada a partir de `insumos/schema.sql`.
+- Arquivos de dados brutos disponíveis para processamento.
+
+### Instalação das dependências
+
+Na raiz do projeto, execute:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+### Configuração do banco de dados
+
+O projeto usa o caminho A da errata, com PostgreSQL instalado localmente. A configuração usada é:
+
+| Parâmetro | Valor |
+|---|---|
+| Host | `127.0.0.1` |
+| Porta | `5432` |
+| Banco | `verdejar` |
+| Usuário | `postgres` |
+
+O pipeline solicita a senha no terminal com `getpass`, que oculta a digitação. O teste de reconciliação usa a variável de ambiente `PGPASSWORD`, configurada na seção [Testes automatizados](#testes-automatizados).
+
+### Extração dos dados
+
+Antes de executar a extração, é necessário iniciar a API Verdejar.
+
+No primeiro terminal, a partir da raiz do projeto:
+
+```powershell
+cd insumos
+python api_verdejar.py
+```
+
+Mantenha esse terminal aberto.
+
+Em um segundo terminal, na raiz do projeto, execute:
+
+```powershell
+python -m etl.extracao
+```
+
+A extração consulta as rotas de clientes e pedidos em páginas de 50 registros e preserva os dados brutos na pasta `brutos/`, juntamente com o catálogo de produtos em CSV.
+
+Essa etapa deve ser realizada antes da primeira execução do pipeline.
+
+### Execução do pipeline
+
+Após concluir a extração e configurar o PostgreSQL, execute na raiz do projeto:
+
+```powershell
+python -m etl.pipeline
+```
+
+O comando lê os arquivos preservados em `brutos/`, aplica as regras de transformação e carrega os dados nas quatro tabelas do PostgreSQL.
+
+A carga utiliza transações e operações de atualização em caso de conflito, permitindo a reexecução sem duplicar registros.
+
+## Regras de transformação
+
+As transformações foram implementadas em funções independentes, seguindo as regras A1–A6 estabelecidas no desafio.
+
+| Regra | Descrição | Resultado |
+|---|---|---|
+| A1 | Identificação e tratamento de e-mails nulos | 81 ocorrências |
+| A2 | Padronização de siglas de estados | 151 alterações |
+| A3 | Conversão de datas | 6.000 datas convertidas (1.000 de clientes e 5.000 de pedidos) |
+| A4 | Conversão de valores monetários para `Decimal` | 17.467 campos monetários preparados para carga |
+| A5 | Remoção de pedidos duplicados por identificador | 100 duplicatas removidas |
+| A6 | Cálculo dos valores dos itens e identificação de divergências | 238 pedidos divergentes |
+
+A regra A6 considera divergente um pedido cuja diferença absoluta entre o valor declarado e o valor calculado dos itens seja superior a R$ 0,01.
+
+## Resultados do processamento
+
+### Extração
+
+| Fonte | Registros extraídos |
+|---|---:|
+| Clientes (API) | 1.000 |
+| Pedidos (API) | 5.100 |
+| Produtos (CSV) | 12 |
+
+A extração utilizou páginas de 50 registros, totalizando 20 páginas de clientes e 102 páginas de pedidos.
+
+### Carga
+
+| Tabela | Registros carregados |
+|---|---:|
+| `clientes` | 1.000 |
+| `produtos` | 12 |
+| `pedidos` | 5.000 |
+| `itens_pedido` | 12.455 |
+
+A diferença entre os pedidos extraídos e carregados corresponde aos 100 registros duplicados removidos durante a transformação.
+
+## Integridade e idempotência
+
+A carga utiliza instruções SQL parametrizadas e operações `INSERT ... ON CONFLICT DO UPDATE`.
+
+As operações são executadas dentro de uma transação, com confirmação por `COMMIT` e reversão por `ROLLBACK` em caso de falha.
+
+A idempotência foi verificada executando o pipeline duas vezes com os mesmos dados.
+
+| Tabela | Primeira carga | Segunda carga |
+|---|---:|---:|
+| Produtos | 12 | 12 |
+| Clientes | 1.000 | 1.000 |
+| Pedidos | 5.000 | 5.000 |
+| Itens de pedido | 12.455 | 12.455 |
+
+Após a segunda carga, uma consulta `COUNT(*)` no PostgreSQL confirmou
+essas mesmas contagens nas quatro tabelas.
+
+## Testes automatizados
+
+A suíte de testes foi desenvolvida utilizando `pytest` e contempla:
+
+- Seis testes para as regras de transformação A1–A6.
+- Um teste de reconciliação entre os pedidos transformados em Python e os registros armazenados no PostgreSQL.
+- Um teste de geração do relatório de qualidade do Stretch 3.
+
+Execute na raiz do projeto, com o PostgreSQL em execução e os dados já carregados. O teste de reconciliação lê a senha de `PGPASSWORD` no mesmo terminal.
+
+```powershell
+$senhaPg = Read-Host "Senha do PostgreSQL" -AsSecureString
+$env:PGPASSWORD = [System.Net.NetworkCredential]::new("", $senhaPg).Password
+python -m pytest tests/ -q
+Remove-Item Env:PGPASSWORD
+Remove-Variable senhaPg
+```
+
+Resultado registrado da suíte completa: `8 passed`.
+
+## Reconciliação financeira
+
+A reconciliação verifica a consistência entre os valores calculados durante a transformação e os valores persistidos no banco.
+
+| Indicador | Resultado |
+|---|---:|
+| Pedidos únicos na origem transformada | 5.000 |
+| Pedidos no PostgreSQL | 5.000 |
+| Soma de `valor_itens` em Python | R$ 311.228,75 |
+| Soma de `valor_itens` no PostgreSQL | R$ 311.228,75 |
+| Diferença financeira | R$ 0,00 |
+
+O teste automatizado compara a quantidade de pedidos e a soma dos valores, exigindo igualdade entre os resultados calculados em Python e os armazenados no PostgreSQL, com diferença financeira de R$ 0,00.
+
+## Consultas de validação
+
+O arquivo `consultas_validacao.sql` contém quatro consultas utilizadas para verificar os dados armazenados no PostgreSQL.
+
+| Consulta | Verificação | Resultado |
+|---|---|---|
+| V1 | Quantidade e valor dos pedidos agrupados por mês | Total geral de R$ 311.228,75 |
+| V2 | Quantidade de pedidos agrupados por estado | 5.000 pedidos no total |
+| V3 | Pedidos com divergência financeira | 238 pedidos |
+| V4 | Reconciliação entre a soma mensal e o total geral | Diferença de R$ 0,00 |
+
+### V1 — Vendas por mês
+
+| Mês | Pedidos | Vendas (R$) |
+|---|---:|---:|
+| 2026-01 | 488 | 30.355,02 |
+| 2026-02 | 536 | 33.855,86 |
+| 2026-03 | 487 | 30.617,70 |
+| 2026-04 | 521 | 31.170,96 |
+| 2026-05 | 512 | 30.777,02 |
+| 2026-06 | 523 | 31.557,73 |
+| 2026-07 | 519 | 32.685,17 |
+| 2026-08 | 458 | 29.260,04 |
+| 2026-09 | 476 | 29.909,71 |
+| 2026-10 | 480 | 31.039,54 |
+| **Total** | **5.000** | **311.228,75** |
+
+### V2 — Pedidos por estado
+
+| Estado | Pedidos |
+|---|---:|
+| RS | 1.543 |
+| SC | 1.127 |
+| PR | 974 |
+| SP | 880 |
+| MG | 476 |
+| **Total** | **5.000** |
+
+### V4 — Conferência da soma mensal
+
+| Soma dos meses (R$) | Total geral (R$) | Diferença (R$) |
+|---:|---:|---:|
+| 311.228,75 | 311.228,75 | 0,00 |
+
+## Documentação complementar
+
+- `CONTRATO_DE_DADOS.md` — definição dos campos, tipos e regras de tratamento.
+- `COMO_USEI_IA.md` — registro do uso de inteligência artificial, incluindo sugestões aceitas, rejeitadas e correções realizadas.
+- `consultas_validacao.sql` — consultas SQL utilizadas para validação dos resultados.
+
+## Autor
+
+**Bruno Araújo**
+
+Bootcamp AIR Fellowship — Desafio Final de Engenharia de Dados e Inteligência Artificial.
+
+## Stretch 3 — Relatório de Qualidade
+
+O ETL gera automaticamente um relatório de qualidade após a conclusão bem-sucedida da carga no PostgreSQL.
+
+Os relatórios são salvos na pasta `relatorios/`, em arquivos `.txt` individuais, identificados pela data e hora da execução.
+
+Cada relatório apresenta os contadores das seis regras de transformação:
+
+- **A1:** Clientes com e-mail nulo.
+- **A2:** Estados padronizados.
+- **A3:** Datas convertidas de clientes e pedidos.
+- **A4:** Campos monetários preparados para carga (produtos, pedidos e itens).
+- **A5:** Pedidos duplicados descartados.
+- **A6:** Pedidos com divergência financeira.
+
+Os indicadores são calculados durante o processamento, sem valores fixos no relatório.
+
+A geração do relatório é executada após a confirmação da transação no banco de dados.
+
+### Validação
+
+O relatório foi gerado com os dados sintéticos do desafio, extraídos da API local e do CSV.
+
+| Regra | Quantidade |
+|---|---:|
+| A1 | 81 |
+| A2 | 151 |
+| A3 | 6.000 |
+| A4 | 17.467 |
+| A5 | 100 |
+| A6 | 238 |
+
+A funcionalidade também possui um teste automatizado em `tests/test_relatorio_qualidade.py`.
+
+O comando para executar a suíte completa está na seção [Testes automatizados](#testes-automatizados).
