@@ -63,7 +63,7 @@ As tarefas solicitadas à IA foram delimitadas por funcionalidade, como a conver
 
 | Sugestão | Motivo da decisão |
 |---|---|
-| Criar um arquivo separado apenas para testar a regra A6 | Preferi realizar a verificação diretamente pelo terminal, evitando arquivos temporários desnecessários. |
+| Deixar a separação de `transformacao.py` para depois da entrega | Adaptei o momento da sugestão e fiz a separação antes de gravar. Coloquei as regras A1–A6 em `etl/regras_transformacao.py` e mantive o processamento em lote e os contadores em `etl/transformacao.py`. Validei a mudança com oito testes aprovados, uma execução da carga e a conferência dos seis indicadores no relatório. |
 | Criar um arquivo separado apenas para testar a regra A6 | Pedi ajuda para conferir o cálculo dos itens e a marcação de divergência. Rejeitei o arquivo separado porque a verificação pontual podia ser feita no terminal. A validação permanente ficou em `tests/test_transformacao.py`: o teste A6 passou e confirmou que R$ 0,01 de diferença fica dentro da tolerância e que R$ 0,02 é marcado como divergência. |
 | Repetir a execução de `etl.pipeline` após uma falha de importação | Pedi ajuda porque `python -m etl.pipeline` retornava `No module named etl.pipeline`. Antes de repetir o comando, conferi a estrutura do projeto e encontrei `pipeline.py` em `etl/__pycache__`. Corrigi a localização e a indentação do arquivo. Depois rodei o mesmo comando e confirmei que o pipeline executava e carregava as quatro tabelas. |
 
